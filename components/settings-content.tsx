@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Bell, Globe, Key, Lock, RefreshCw, Save, User, Pencil, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-export function SettingsContent() {
+function SettingsContentInner() {
   const searchParams = useSearchParams()
   const tabParam = searchParams.get("tab")
   const [activeTab, setActiveTab] = useState(tabParam || "account")
@@ -547,5 +547,25 @@ export function SettingsContent() {
         </TabsContent>
       </Tabs>
     </div>
+  )
+}
+
+export function SettingsContent() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-6 w-full max-w-none">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
+            <p className="text-muted-foreground">Loading settings...</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center p-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    }>
+      <SettingsContentInner />
+    </Suspense>
   )
 }
