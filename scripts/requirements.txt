@@ -1,0 +1,6 @@
+langgraph>=0.4.1
+python-dotenv>=1.0.0
+supabase>=1.0.3
+requests>=2.31.0
+python-dateutil>=2.8.2
+cryptography>=42.0.0  # For encryption 

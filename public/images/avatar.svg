@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="100" fill="url(#gradient)" />
+  
+  <!-- Simple user silhouette -->
+  <circle cx="100" cy="70" r="30" fill="white" />
+  <path d="M100,110 C70,110 45,130 45,160 L155,160 C155,130 130,110 100,110 Z" fill="white" />
+</svg> 
