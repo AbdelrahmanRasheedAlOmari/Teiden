@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useAuth } from "@/contexts/auth-context"
 
 interface DashboardSidebarProps {
   onClose?: () => void;
@@ -23,6 +24,7 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ onClose, collapsed = false }: DashboardSidebarProps) {
   const pathname = usePathname()
   const [activeItem, setActiveItem] = useState("dashboard")
+  const { user, signOut } = useAuth()
 
   // Update active item based on current path
   useEffect(() => {
@@ -43,21 +45,20 @@ export function DashboardSidebar({ onClose, collapsed = false }: DashboardSideba
     }
   }, [pathname])
 
-  // Mock user data - in a real app this would come from auth context
-  const user = {
-    name: "Abdel Alomari",
-    email: "abdel@teiden.co",
-    avatarUrl: "/images/avatar.svg"
-  }
-
   // Extract initials for avatar fallback
   const getInitials = (name: string) => {
+    if (!name) return "U";
     return name
       .split(' ')
       .map(part => part[0])
       .join('')
       .toUpperCase();
   }
+
+  // Get user display name from user object
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User";
+  const userEmail = user?.email || "";
+  const avatarUrl = user?.user_metadata?.avatar_url || "/images/avatar.svg";
 
   const navItems = [
     {
@@ -105,6 +106,11 @@ export function DashboardSidebar({ onClose, collapsed = false }: DashboardSideba
       id: "settings",
     },
   ]
+
+  // Handle logout
+  const handleLogout = async () => {
+    await signOut();
+  };
 
   return (
     <div className="h-full">
@@ -181,12 +187,12 @@ export function DashboardSidebar({ onClose, collapsed = false }: DashboardSideba
                 <Button variant="ghost" className="w-full flex items-center justify-between p-2 hover:bg-muted/50 rounded-md">
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatarUrl} alt={user.name} />
-                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                      <AvatarImage src={avatarUrl} alt={displayName} />
+                      <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
                     </Avatar>
                     <div className="text-left">
-                      <p className="text-sm font-medium">{user.name}</p>
-                      <p className="text-xs text-muted-foreground truncate max-w-[150px]">{user.email}</p>
+                      <p className="text-sm font-medium">{displayName}</p>
+                      <p className="text-xs text-muted-foreground truncate max-w-[150px]">{userEmail}</p>
                     </div>
                   </div>
                   <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -200,7 +206,7 @@ export function DashboardSidebar({ onClose, collapsed = false }: DashboardSideba
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-500 focus:text-red-500">
+                <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log Out</span>
                 </DropdownMenuItem>
@@ -212,16 +218,16 @@ export function DashboardSidebar({ onClose, collapsed = false }: DashboardSideba
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatarUrl} alt={user.name} />
-                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                      <AvatarImage src={avatarUrl} alt={displayName} />
+                      <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="flex items-center justify-start gap-2 p-2">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                      <p className="text-sm font-medium leading-none">{displayName}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
                     </div>
                   </div>
                   <DropdownMenuSeparator />
@@ -232,7 +238,7 @@ export function DashboardSidebar({ onClose, collapsed = false }: DashboardSideba
                     </DropdownMenuItem>
                   </Link>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-500 focus:text-red-500">
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log Out</span>
                   </DropdownMenuItem>

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useAuth } from "@/contexts/auth-context"
 
 function SettingsContentInner() {
   const searchParams = useSearchParams()
@@ -19,21 +20,23 @@ function SettingsContentInner() {
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [isSavingProfile, setIsSavingProfile] = useState(false)
   const [isSavingPreferences, setIsSavingPreferences] = useState(false)
+  const { user } = useAuth()
 
-  // Mock user data - in a real app this would come from auth context
-  const user = {
-    name: "Abdel Alomari",
-    email: "abdel@teiden.co",
-    company: "Teiden",
-    role: "Administrator",
-    avatarUrl: "/images/avatar.svg",
-    language: "en",
-    timezone: "utc+3",
-    darkMode: true
+  // Get user profile data from auth context
+  const userData = {
+    name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User",
+    email: user?.email || "",
+    company: user?.user_metadata?.company || "Not specified",
+    role: user?.user_metadata?.role || "User",
+    avatarUrl: user?.user_metadata?.avatar_url || "/images/avatar.svg",
+    language: user?.user_metadata?.language || "en",
+    timezone: user?.user_metadata?.timezone || "utc",
+    darkMode: user?.user_metadata?.darkMode || true
   }
 
   // Extract initials for avatar fallback
   const getInitials = (name: string) => {
+    if (!name) return "U";
     return name
       .split(' ')
       .map(part => part[0])
@@ -114,8 +117,8 @@ function SettingsContentInner() {
             <CardContent className="space-y-4">
               <div className="flex flex-col items-center space-y-4 sm:flex-row sm:items-start sm:space-x-4 sm:space-y-0">
                 <Avatar className="h-24 w-24 border-2 border-primary/20">
-                  <AvatarImage src={user.avatarUrl} />
-                  <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                  <AvatarImage src={userData.avatarUrl} />
+                  <AvatarFallback>{getInitials(userData.name)}</AvatarFallback>
                 </Avatar>
                 <div className="space-y-1 text-center sm:text-left">
                   <h3 className="font-medium">Profile Photo</h3>
@@ -126,7 +129,7 @@ function SettingsContentInner() {
                     <Button variant="outline" size="sm" disabled={!isEditingProfile}>
                       Change Photo
                     </Button>
-                    {user.avatarUrl && (
+                    {userData.avatarUrl && (
                       <Button variant="outline" size="sm" className="text-red-500 hover:text-red-500" disabled={!isEditingProfile}>
                         Remove
                       </Button>
@@ -140,7 +143,7 @@ function SettingsContentInner() {
                   <Label htmlFor="name">Full Name</Label>
                   <Input 
                     id="name" 
-                    defaultValue={user.name} 
+                    defaultValue={userData.name} 
                     className="border-border/60 bg-background/80" 
                     readOnly={!isEditingProfile}
                     disabled={!isEditingProfile}
@@ -150,7 +153,7 @@ function SettingsContentInner() {
                   <Label htmlFor="email">Email Address</Label>
                   <Input 
                     id="email" 
-                    defaultValue={user.email} 
+                    defaultValue={userData.email} 
                     className="border-border/60 bg-background/80" 
                     readOnly={!isEditingProfile}
                     disabled={!isEditingProfile}
@@ -160,7 +163,7 @@ function SettingsContentInner() {
                   <Label htmlFor="company">Company</Label>
                   <Input 
                     id="company" 
-                    defaultValue={user.company} 
+                    defaultValue={userData.company} 
                     className="border-border/60 bg-background/80" 
                     readOnly={!isEditingProfile}
                     disabled={!isEditingProfile}
@@ -170,7 +173,7 @@ function SettingsContentInner() {
                   <Label htmlFor="role">Role</Label>
                   <Input 
                     id="role" 
-                    defaultValue={user.role} 
+                    defaultValue={userData.role} 
                     className="border-border/60 bg-background/80" 
                     readOnly={!isEditingProfile}
                     disabled={!isEditingProfile}
@@ -209,7 +212,7 @@ function SettingsContentInner() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="language">Language</Label>
-                <Select defaultValue={user.language}>
+                <Select defaultValue={userData.language}>
                   <SelectTrigger id="language" className="border-border/60 bg-background/80">
                     <SelectValue placeholder="Select language" />
                   </SelectTrigger>
@@ -226,7 +229,7 @@ function SettingsContentInner() {
 
               <div className="space-y-2">
                 <Label htmlFor="timezone">Timezone</Label>
-                <Select defaultValue={user.timezone}>
+                <Select defaultValue={userData.timezone}>
                   <SelectTrigger id="timezone" className="border-border/60 bg-background/80">
                     <SelectValue placeholder="Select timezone" />
                   </SelectTrigger>
@@ -247,7 +250,7 @@ function SettingsContentInner() {
                   <Label className="text-sm">Dark Mode</Label>
                   <p className="text-xs text-muted-foreground">Use dark mode for the dashboard</p>
                 </div>
-                <Switch checked={user.darkMode} />
+                <Switch checked={userData.darkMode} />
               </div>
             </CardContent>
             <CardFooter className="flex justify-end border-t border-border/40 bg-card/30 px-6 py-4">
