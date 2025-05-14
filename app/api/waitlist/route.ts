@@ -16,7 +16,7 @@ const ensureDirectoryExists = (directory: string) => {
 const ensureFileExists = () => {
   ensureDirectoryExists(path.dirname(dataFilePath));
   if (!fs.existsSync(dataFilePath)) {
-    fs.writeFileSync(dataFilePath, JSON.stringify({ emails: [] }), 'utf8');
+    fs.writeFileSync(dataFilePath, JSON.stringify({ emails: [] }, null, 2), 'utf8');
   }
 };
 
@@ -39,7 +39,19 @@ export async function POST(request: Request) {
 
     // Read existing data
     const rawData = fs.readFileSync(dataFilePath, 'utf8');
-    const data = JSON.parse(rawData);
+    let data;
+    
+    try {
+      data = JSON.parse(rawData);
+      // Ensure the data has the expected structure
+      if (!data.emails || !Array.isArray(data.emails)) {
+        data = { emails: [] };
+      }
+    } catch (error) {
+      console.error('Error parsing waitlist.json:', error);
+      // Reset the file if it's corrupted
+      data = { emails: [] };
+    }
 
     // Check if email already exists
     if (data.emails.includes(email)) {
@@ -52,8 +64,10 @@ export async function POST(request: Request) {
     // Add email to waitlist
     data.emails.push(email);
 
-    // Save updated data
+    // Save updated data with pretty formatting
     fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf8');
+    
+    console.log(`Added email to waitlist: ${email}`);
 
     // Return success response
     return NextResponse.json(

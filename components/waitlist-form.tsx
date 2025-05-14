@@ -54,8 +54,10 @@ export function WaitlistForm({ large = false }: WaitlistFormProps) {
       setSubmittedEmail(email);
       setEmail("");
       
-      // Show success dialog instead of toast
+      // Show success dialog
       setShowSuccessDialog(true);
+      
+      console.log("Success dialog should be showing:", true);
     } catch (error) {
       // Show error message
       toast({

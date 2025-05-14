@@ -19,32 +19,37 @@ interface WaitlistSuccessDialogProps {
 }
 
 export function WaitlistSuccessDialog({ open, onOpenChange, email }: WaitlistSuccessDialogProps) {
-  // Auto-close after 10 seconds
+  // Auto-close after 20 seconds (increased from 10)
   useEffect(() => {
     if (open) {
       const timer = setTimeout(() => {
         onOpenChange(false)
-      }, 10000)
+      }, 20000)
       return () => clearTimeout(timer)
     }
   }, [open, onOpenChange])
 
+  // Log when dialog opens or closes
+  useEffect(() => {
+    console.log("WaitlistSuccessDialog open state:", open);
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md border-border/40 bg-card/30 backdrop-blur-sm">
+      <DialogContent className="sm:max-w-md border-border/40 bg-card/80 backdrop-blur-lg shadow-xl animate-in fade-in-0 zoom-in-95 duration-300">
         <DialogHeader className="flex items-center flex-col">
-          <div className="bg-primary/10 p-3 rounded-full inline-flex mb-4">
-            <CheckCircle className="h-10 w-10 text-primary" />
+          <div className="bg-primary/20 p-4 rounded-full inline-flex mb-4">
+            <CheckCircle className="h-12 w-12 text-primary" />
           </div>
-          <DialogTitle className="text-2xl bg-gradient-to-r from-blue-400 via-primary to-purple-500 bg-clip-text text-transparent">
+          <DialogTitle className="text-2xl bg-gradient-to-r from-blue-400 via-primary to-purple-500 bg-clip-text text-transparent font-bold">
             You're on the list!
           </DialogTitle>
-          <DialogDescription className="text-center mt-2">
+          <DialogDescription className="text-center mt-2 text-base">
             Thank you for joining our waitlist. We're excited to have you as part of our journey!
           </DialogDescription>
         </DialogHeader>
         
-        <div className="my-4 p-4 bg-background/50 rounded-lg border border-border/40">
+        <div className="my-4 p-4 bg-background/80 rounded-lg border border-border/40">
           <p className="text-center text-sm mb-2">You'll be among the first to know when Teiden launches.</p>
         </div>
         
@@ -54,10 +59,10 @@ export function WaitlistSuccessDialog({ open, onOpenChange, email }: WaitlistSuc
           </p>
         )}
         
-        <DialogFooter className="flex justify-center">
+        <DialogFooter className="flex justify-center mt-4">
           <Button 
             onClick={() => onOpenChange(false)}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6"
           >
             Continue Exploring
           </Button>
