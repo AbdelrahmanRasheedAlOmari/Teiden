@@ -39,13 +39,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check for active session on mount
     const checkSession = async () => {
       try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
+        // First get the session
+        const { data: sessionData } = await supabase.auth.getSession();
+        setSession(sessionData.session);
         
-        setSession(data.session);
-        setUser(data.session?.user || null);
+        // Then get the authenticated user - which is more secure
+        if (sessionData.session) {
+          const { data: userData, error: userError } = await supabase.auth.getUser();
+          if (userError) throw userError;
+          setUser(userData.user);
+        } else {
+          setUser(null);
+        }
       } catch (error) {
-        console.error('Error checking session:', error);
+        console.error('Error checking authentication:', error);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -55,9 +63,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (_event, session) => {
         setSession(session);
-        setUser(session?.user || null);
+        
+        // For auth state changes, also get the authenticated user
+        if (session) {
+          try {
+            const { data: userData, error: userError } = await supabase.auth.getUser();
+            if (!userError) {
+              setUser(userData.user);
+            }
+          } catch (error) {
+            console.error('Error getting user data:', error);
+          }
+        } else {
+          setUser(null);
+        }
+        
         setIsLoading(false);
       }
     );
