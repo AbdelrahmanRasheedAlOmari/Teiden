@@ -19,20 +19,46 @@ interface WaitlistSuccessDialogProps {
 }
 
 export function WaitlistSuccessDialog({ open, onOpenChange, email }: WaitlistSuccessDialogProps) {
-  // Auto-close after 20 seconds (increased from 10)
+  // Log immediately when props change
+  useEffect(() => {
+    console.log("WaitlistSuccessDialog props:", { open, email });
+  }, [open, email]);
+
+  // Auto-close after 20 seconds
   useEffect(() => {
     if (open) {
+      console.log("WaitlistSuccessDialog is open, setting auto-close timer");
       const timer = setTimeout(() => {
-        onOpenChange(false)
-      }, 20000)
-      return () => clearTimeout(timer)
+        console.log("Auto-closing WaitlistSuccessDialog");
+        onOpenChange(false);
+      }, 20000);
+      
+      return () => {
+        console.log("Clearing WaitlistSuccessDialog timer");
+        clearTimeout(timer);
+      };
     }
-  }, [open, onOpenChange])
+  }, [open, onOpenChange]);
 
-  // Log when dialog opens or closes
+  // Force the dialog to be visible even if state is inconsistent
   useEffect(() => {
-    console.log("WaitlistSuccessDialog open state:", open);
-  }, [open]);
+    if (open && email) {
+      // Force a rerender after a brief delay to ensure the dialog shows
+      const forceTimer = setTimeout(() => {
+        const dialogElement = document.querySelector('[role="dialog"]');
+        if (!dialogElement) {
+          console.log("Dialog element not found, forcing visibility");
+          // Force the dialog to be visible by manually dispatching state change
+          onOpenChange(false);
+          setTimeout(() => onOpenChange(true), 10);
+        } else {
+          console.log("Dialog element is present in the DOM");
+        }
+      }, 200);
+      
+      return () => clearTimeout(forceTimer);
+    }
+  }, [open, email, onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

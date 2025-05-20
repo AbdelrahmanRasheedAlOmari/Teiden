@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/usage-fetcher",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/agents?type=forecast",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/agents?type=prevention",
+      "schedule": "*/15 * * * *"
     }
   ],
   "headers": [

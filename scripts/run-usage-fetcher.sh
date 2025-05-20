@@ -18,7 +18,7 @@ pip install -r scripts/requirements.txt
 
 # Run the OpenAI usage fetcher
 echo "Running OpenAI usage fetcher..."
-python3 scripts/openai_usage_fetcher.py
+python3 lib/agents/openai-usage-agent/openai_usage_fetcher.py
 
 # Deactivate virtual environment
 deactivate 

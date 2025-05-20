@@ -19,10 +19,10 @@ export async function GET(request: NextRequest) {
 
   try {
     // Execute the Python script for OpenAI usage fetcher
-    const scriptPath = path.resolve(process.cwd(), 'scripts/run-usage-fetcher.sh');
+    const scriptPath = path.resolve(process.cwd(), 'lib/agents/openai-usage-agent/openai_usage_fetcher.py');
     console.log(`Running script: ${scriptPath}`);
     
-    const { stdout, stderr } = await execAsync(`bash ${scriptPath}`);
+    const { stdout, stderr } = await execAsync(`python3 ${scriptPath}`);
     
     if (stderr) {
       console.warn('Script warnings:', stderr);

@@ -1,24 +1,5 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-// In a real app, you would use a database instead of a JSON file
-const dataFilePath = path.join(process.cwd(), 'data/waitlist.json');
-
-// Ensure the data directory exists
-const ensureDirectoryExists = (directory: string) => {
-  if (!fs.existsSync(directory)) {
-    fs.mkdirSync(directory, { recursive: true });
-  }
-};
-
-// Ensure the waitlist file exists
-const ensureFileExists = () => {
-  ensureDirectoryExists(path.dirname(dataFilePath));
-  if (!fs.existsSync(dataFilePath)) {
-    fs.writeFileSync(dataFilePath, JSON.stringify({ emails: [] }, null, 2), 'utf8');
-  }
-};
+import { createServerSupabaseClient } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
@@ -34,27 +15,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // Ensure data file exists
-    ensureFileExists();
+    // Create Supabase client
+    const supabase = createServerSupabaseClient();
 
-    // Read existing data
-    const rawData = fs.readFileSync(dataFilePath, 'utf8');
-    let data;
-    
-    try {
-      data = JSON.parse(rawData);
-      // Ensure the data has the expected structure
-      if (!data.emails || !Array.isArray(data.emails)) {
-        data = { emails: [] };
-      }
-    } catch (error) {
-      console.error('Error parsing waitlist.json:', error);
-      // Reset the file if it's corrupted
-      data = { emails: [] };
-    }
+    // Check if email already exists in waitlist table
+    const { data: existingEmail } = await supabase
+      .from('waitlist')
+      .select('email')
+      .eq('email', email)
+      .maybeSingle();
 
-    // Check if email already exists
-    if (data.emails.includes(email)) {
+    if (existingEmail) {
       return NextResponse.json(
         { success: true, message: 'You are already on the waitlist' },
         { status: 200 }
@@ -62,10 +33,14 @@ export async function POST(request: Request) {
     }
 
     // Add email to waitlist
-    data.emails.push(email);
+    const { error } = await supabase
+      .from('waitlist')
+      .insert([{ email }]);
 
-    // Save updated data with pretty formatting
-    fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf8');
+    if (error) {
+      console.error('Error adding to waitlist:', error);
+      throw new Error('Failed to add to waitlist');
+    }
     
     console.log(`Added email to waitlist: ${email}`);
 

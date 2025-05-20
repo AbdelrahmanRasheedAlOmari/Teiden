@@ -1,73 +1,130 @@
-// This file simulates cron jobs during development
-require('dotenv').config();
-const axios = require('axios');
+// Development script to simulate cron jobs locally
 const cron = require('node-cron');
 const { exec } = require('child_process');
+const { promisify } = require('util');
 const path = require('path');
+require('dotenv').config();
 
-console.log('Starting development cron jobs...');
+const execAsync = promisify(exec);
 
-// Get cron API key from env
-const cronApiKey = process.env.CRON_API_KEY;
-if (!cronApiKey) {
-  console.error('No CRON_API_KEY found in environment. Please set this in your .env file.');
-  process.exit(1);
-}
+// Cron job definitions
+const cronJobs = [
+  {
+    id: 'usage-fetcher',
+    schedule: '*/5 * * * *', // Run every 5 minutes for testing
+    command: 'python3 lib/agents/openai-usage-agent/openai_usage_fetcher.py'
+  },
+  {
+    id: 'forecast-agent',
+    schedule: '*/10 * * * *', // Run every 10 minutes for testing
+    command: 'python3 lib/agents/forecasting-agent/forecast_agent.py'
+  },
+  {
+    id: 'prevention-agent',
+    schedule: '*/3 * * * *', // Run every 3 minutes for testing
+    command: 'python3 lib/agents/prevention-agent/prevention_agent.py'
+  }
+];
 
-// Base URL for API calls
-const baseUrl = 'http://localhost:3000/api';
-
-// Helper function to call API endpoints
-async function callEndpoint(endpoint) {
+// Create a virtual environment and install dependencies if needed
+async function setupEnvironment() {
+  console.log('Setting up Python environment and dependencies...');
+  
   try {
-    const response = await axios.get(`${baseUrl}${endpoint}`, {
-      headers: {
-        'x-cron-api-key': cronApiKey
-      }
-    });
-    console.log(`✅ [${new Date().toISOString()}] Successfully called ${endpoint}:`, response.data);
-    return response.data;
+    // Check if venv exists
+    const venvCheck = await execAsync('[ -d "venv" ] && echo "exists" || echo "not exists"');
+    const venvExists = venvCheck.stdout.trim() === 'exists';
+    
+    if (!venvExists) {
+      console.log('Creating virtual environment...');
+      await execAsync('python3 -m venv venv');
+    }
+    
+    // Install dependencies
+    console.log('Installing dependencies...');
+    await execAsync('source venv/bin/activate && pip install -r lib/agents/requirements.txt');
+    
+    console.log('Environment setup completed.');
   } catch (error) {
-    console.error(`❌ [${new Date().toISOString()}] Error calling ${endpoint}:`, error.response?.data || error.message);
-    return null;
+    console.error('Error setting up environment:', error);
   }
 }
 
-// Helper function to run shell scripts
-function runScript(scriptPath) {
-  return new Promise((resolve, reject) => {
-    const fullPath = path.resolve(__dirname, scriptPath);
-    console.log(`🔄 [${new Date().toISOString()}] Running script: ${fullPath}`);
+// Run a specific cron job manually
+async function runJob(jobId) {
+  const job = cronJobs.find(job => job.id === jobId);
+  
+  if (!job) {
+    console.error(`Job with ID "${jobId}" not found.`);
+    return;
+  }
+  
+  console.log(`Manually running job: ${job.id}`);
+  
+  try {
+    const { stdout, stderr } = await execAsync(job.command);
+    console.log(`Output from ${job.id}:`);
+    console.log(stdout);
     
-    exec(`bash ${fullPath}`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`❌ [${new Date().toISOString()}] Error running script:`, error);
-        reject(error);
-        return;
-      }
+    if (stderr) {
+      console.warn(`Warnings/errors from ${job.id}:`);
+      console.warn(stderr);
+    }
+  } catch (error) {
+    console.error(`Error running job ${job.id}:`, error);
+  }
+}
+
+// Schedule all cron jobs
+function scheduleJobs() {
+  cronJobs.forEach(job => {
+    console.log(`Scheduling job "${job.id}" with schedule: ${job.schedule}`);
+    
+    cron.schedule(job.schedule, async () => {
+      console.log(`Running cron job: ${job.id} at ${new Date().toISOString()}`);
       
-      if (stderr) {
-        console.warn(`⚠️ [${new Date().toISOString()}] Script warnings:`, stderr);
+      try {
+        const { stdout, stderr } = await execAsync(job.command);
+        console.log(`Job ${job.id} completed successfully.`);
+        
+        if (stdout.trim()) {
+          console.log(`Output from ${job.id}:`);
+          console.log(stdout.split('\n').slice(0, 5).join('\n') + (stdout.split('\n').length > 5 ? '\n... (truncated)' : ''));
+        }
+        
+        if (stderr) {
+          console.warn(`Warnings from ${job.id}:`);
+          console.warn(stderr.split('\n').slice(0, 5).join('\n') + (stderr.split('\n').length > 5 ? '\n... (truncated)' : ''));
+        }
+      } catch (error) {
+        console.error(`Error running job ${job.id}:`, error);
       }
-      
-      console.log(`✅ [${new Date().toISOString()}] Script output:`, stdout);
-      resolve(stdout);
     });
   });
+  
+  console.log('All cron jobs scheduled. Press Ctrl+C to stop.');
 }
 
-// Schedule OpenAI usage fetcher to run every 15 minutes
-cron.schedule('*/15 * * * *', async () => {
-  console.log(`🕒 [${new Date().toISOString()}] Running OpenAI usage fetcher...`);
-  try {
-    await runScript('./run-usage-fetcher.sh');
-    console.log(`✅ [${new Date().toISOString()}] OpenAI usage fetcher completed successfully`);
-  } catch (error) {
-    console.error(`❌ [${new Date().toISOString()}] Error running OpenAI usage fetcher:`, error);
+// Main function
+async function main() {
+  const args = process.argv.slice(2);
+  
+  // Setup environment first
+  await setupEnvironment();
+  
+  if (args.length > 0 && args[0] === 'run') {
+    // Run a specific job
+    if (args.length < 2) {
+      console.error('Please specify a job ID to run.');
+      console.log('Available jobs:', cronJobs.map(job => job.id).join(', '));
+      return;
+    }
+    
+    await runJob(args[1]);
+  } else {
+    // Schedule all jobs
+    scheduleJobs();
   }
-});
+}
 
-// Add any other cron jobs here
-
-console.log('Development cron jobs have been scheduled.');
-console.log('Press Ctrl+C to stop.'); 
+main().catch(console.error); 

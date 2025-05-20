@@ -35,6 +35,8 @@ export function WaitlistForm({ large = false }: WaitlistFormProps) {
     setIsSubmitting(true)
 
     try {
+      console.log("Submitting email to waitlist:", email)
+      
       // Call the API endpoint to save the email
       const response = await fetch('/api/waitlist', {
         method: 'POST',
@@ -42,31 +44,43 @@ export function WaitlistForm({ large = false }: WaitlistFormProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
+      console.log("Waitlist API response:", data)
       
       if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
+        throw new Error(data.message || 'Something went wrong')
       }
 
       // Save the email for the success dialog and clear the form
-      setSubmittedEmail(email);
-      setEmail("");
+      setSubmittedEmail(email)
+      setEmail("")
       
-      // Show success dialog
-      setShowSuccessDialog(true);
-      
-      console.log("Success dialog should be showing:", true);
+      // Small delay to ensure state updates complete
+      setTimeout(() => {
+        // Show success dialog
+        setShowSuccessDialog(true)
+        console.log("Success dialog state set to true:", true)
+        
+        // Force a re-render to ensure the dialog appears
+        setTimeout(() => {
+          if (!showSuccessDialog) {
+            console.log("Dialog still not showing, forcing update")
+            setShowSuccessDialog(true)
+          }
+        }, 100)
+      }, 100)
     } catch (error) {
       // Show error message
+      console.error("Waitlist submission error:", error)
       toast({
         title: "Oops!",
         description: error instanceof Error ? error.message : "Failed to join the waitlist. Please try again.",
         variant: "destructive",
-      });
+      })
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
   }
 
