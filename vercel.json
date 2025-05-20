@@ -7,10 +7,6 @@
     {
       "path": "/api/cron/agents?type=forecast",
       "schedule": "0 1 * * *"
-    },
-    {
-      "path": "/api/cron/agents?type=prevention",
-      "schedule": "0 2 * * *"
     }
   ],
   "headers": [
