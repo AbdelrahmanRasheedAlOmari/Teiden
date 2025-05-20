@@ -22,6 +22,8 @@ import {
   Twitter,
   Github,
   Linkedin,
+  Command,
+  LayoutDashboard,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -87,30 +89,43 @@ export function LandingPage() {
               {/* Left side content */}
               <div className="text-left max-w-xl">
                 <h1 className="bg-gradient-to-r from-blue-400 via-primary to-purple-500 bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl md:text-6xl leading-[1.2] pb-2">
-                  Never Experience an API Outage Again
+                  Your AI Operations Control Panel
                 </h1>
-                <p className="mt-6 text-xl text-muted-foreground">
-                  Teiden is the all-in-one platform for managing AI APIs. Our intelligent agents forecast usage, prevent outages, and automate credit purchases before they happen.
-                </p>
-                <div className="mt-10 max-w-md">
+                
+                <div className="mt-6 space-y-4">
+                  <div className="flex items-center gap-2 text-xl text-muted-foreground">
+                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                    <p>Manage all your AI tools and costs from one place</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-xl text-muted-foreground">
+                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                    <p>Get ahead of API limits before they affect your services</p>
+                  </div>
+                </div>
+                
+                {/* CTA moved above the fold with better visual contrast */}
+                <div className="mt-8 p-4 bg-primary/5 backdrop-blur-sm rounded-lg border border-primary/20 shadow-sm">
+                  <h3 className="text-lg font-medium mb-2 text-primary">Get Early Access</h3>
                   <WaitlistForm />
                 </div>
-                <div className="mt-8 flex flex-wrap gap-x-6 gap-y-4">
-                  <div className="flex items-center gap-1.5">
-                    <Check className="h-4 w-4 text-primary" />
-                    <span className="text-sm">Predictive usage forecasting</span>
+                
+                <div className="mt-8 grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-1.5 rounded-lg p-2 bg-background/70 border border-border/20">
+                    <LayoutDashboard className="h-5 w-5 text-primary" />
+                    <span className="text-sm font-medium">Unified operations</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <Check className="h-4 w-4 text-primary" />
-                    <span className="text-sm">Automated credit top-ups</span>
+                  <div className="flex items-center gap-1.5 rounded-lg p-2 bg-background/70 border border-border/20">
+                    <Activity className="h-5 w-5 text-primary" />
+                    <span className="text-sm font-medium">Cost optimization</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <Check className="h-4 w-4 text-primary" />
-                    <span className="text-sm">Per-project cost tracking</span>
+                  <div className="flex items-center gap-1.5 rounded-lg p-2 bg-background/70 border border-border/20">
+                    <BarChart3 className="h-5 w-5 text-primary" />
+                    <span className="text-sm font-medium">Usage forecasting</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <Check className="h-4 w-4 text-primary" />
-                    <span className="text-sm">Multi-provider support</span>
+                  <div className="flex items-center gap-1.5 rounded-lg p-2 bg-background/70 border border-border/20">
+                    <Shield className="h-5 w-5 text-primary" />
+                    <span className="text-sm font-medium">Reliability assurance</span>
                   </div>
                 </div>
               </div>
@@ -218,10 +233,9 @@ export function LandingPage() {
               <div className="mb-4 inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
                 How It Works
               </div>
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Proactive API Reliability Management</h2>
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Your AI Stack Command Center</h2>
               <p className="mt-4 text-lg text-muted-foreground">
-                Teiden's network of specialized AI agents work together to monitor your API usage, predict potential
-                outages, and ensure continuous service availability.
+                As your AI stack grows more complex, Teiden gives you a single pane of glass to manage all your tools and services.
               </p>
             </ScrollAnimation>
 
@@ -233,20 +247,19 @@ export function LandingPage() {
               <div className="grid gap-8 md:grid-cols-3">
                 {[
                   {
-                    icon: <Bot className="h-6 w-6 text-primary" />,
-                    title: "Monitoring Agent",
-                    description: "Continuously tracks API usage and health across all your services in real-time",
+                    icon: <Command className="h-12 w-12 text-primary p-2 bg-primary/10 rounded-lg" />,
+                    title: "Centralized AI Operations",
+                    description: "Manage all your AI tools, providers and services from a single, intuitive dashboard",
                   },
                   {
-                    icon: <LineChart className="h-6 w-6 text-primary" />,
-                    title: "Forecasting Agent",
-                    description:
-                      "Predicts usage patterns and potential bottlenecks with 97% accuracy, helping you avoid unexpected costs",
+                    icon: <LineChart className="h-12 w-12 text-primary p-2 bg-primary/10 rounded-lg" />,
+                    title: "Unified Cost Management",
+                    description: "Track spending across all AI tools and get a clear view of where your budget is going",
                   },
                   {
-                    icon: <AlertTriangle className="h-6 w-6 text-primary" />,
-                    title: "Prevention Agent",
-                    description: "Automatically takes action to prevent outages before they impact your users",
+                    icon: <AlertTriangle className="h-12 w-12 text-primary p-2 bg-primary/10 rounded-lg" />,
+                    title: "Proactive Operations",
+                    description: "Stay ahead of issues with intelligent forecasting and preventative monitoring",
                   },
                 ].map((agent, index) => (
                   <ScrollAnimation 
@@ -772,10 +785,10 @@ export function LandingPage() {
               <div className="relative rounded-2xl bg-gradient-to-b from-primary/20 to-primary/5 py-16">
                 <div className="mx-auto max-w-3xl text-center">
                   <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                    Ready to eliminate API reliability headaches?
+                    Ready to simplify your AI operations?
                   </h2>
                   <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
-                    Join the waitlist today and be among the first to experience stress-free API management.
+                    Join the waitlist today and be among the first to experience streamlined management of your entire AI stack.
                   </p>
                   <div className="mt-10 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
                     <Button
@@ -809,7 +822,7 @@ export function LandingPage() {
               </div>
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Join the Waitlist</h2>
               <p className="mt-4 text-lg text-muted-foreground">
-                Be among the first to experience Teiden and take control of your API reliability.
+                Be among the first to experience Teiden and take control of your AI operations.
               </p>
               <div className="mx-auto mt-10 max-w-md">
                 <WaitlistForm large />
