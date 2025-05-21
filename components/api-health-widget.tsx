@@ -1,43 +1,45 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { CheckCircle, AlertTriangle, XCircle, Info } from "lucide-react"
+import { CheckCircle, AlertTriangle, XCircle, Info, Loader2 } from "lucide-react"
 import { useProject } from "@/contexts/project-context"
 import Image from "next/image"
 
+interface ApiStatus {
+  provider: string;
+  status: "operational" | "degraded" | "outage" | "unknown";
+  latency: string;
+  logo: string;
+  lastIncident?: {
+    title: string;
+    date: string;
+    status: string;
+  };
+}
+
 export function ApiHealthWidget() {
   const { selectedProject } = useProject()
-  const projectId = selectedProject?.id || "all"
+  // const projectId = selectedProject?.id || "all"
 
-  // Simulate different API statuses based on the selected project
-  const getApiStatuses = () => {
-    if (projectId === "mobile") {
-      return [
-        { provider: "OpenAI", status: "operational", latency: "124ms", logo: "/images/openai-logo.webp" },
-        { provider: "Anthropic", status: "degraded", latency: "387ms", logo: "/images/claude-logo.webp" },
-        { provider: "Mistral AI", status: "operational", latency: "156ms", logo: "/images/mistral-logo.webp" },
-        { provider: "Meta", status: "operational", latency: "142ms", logo: "/images/meta-logo.webp" },
-      ]
-    } else if (projectId === "chatbot") {
-      return [
-        { provider: "OpenAI", status: "operational", latency: "118ms", logo: "/images/openai-logo.webp" },
-        { provider: "Anthropic", status: "operational", latency: "210ms", logo: "/images/claude-logo.webp" },
-        { provider: "Mistral AI", status: "outage", latency: "N/A", logo: "/images/mistral-logo.webp" },
-        { provider: "Meta", status: "operational", latency: "135ms", logo: "/images/meta-logo.webp" },
-      ]
-    } else {
-      return [
-        { provider: "OpenAI", status: "operational", latency: "115ms", logo: "/images/openai-logo.webp" },
-        { provider: "Anthropic", status: "operational", latency: "205ms", logo: "/images/claude-logo.webp" },
-        { provider: "Mistral AI", status: "operational", latency: "148ms", logo: "/images/mistral-logo.webp" },
-        { provider: "Meta", status: "degraded", latency: "312ms", logo: "/images/meta-logo.webp" },
-      ]
-    }
-  }
+  const [apiStatuses, setApiStatuses] = useState<ApiStatus[] | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const apiStatuses = getApiStatuses()
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+    fetch("/api/status")
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Failed to fetch API status")
+        const data = await res.json()
+        setApiStatuses(data.apiStatuses)
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [])
 
   // Helper function to render status icon
   const renderStatusIcon = (status: string) => {
@@ -90,41 +92,59 @@ export function ApiHealthWidget() {
         <CardDescription>Real-time status of your connected API providers</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {apiStatuses.map((api) => (
-            <div
-              key={api.provider}
-              className="flex flex-col space-y-2 rounded-lg border border-border/40 bg-background/50 p-4"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="relative h-6 w-6 overflow-hidden rounded-full bg-background">
-                    <Image
-                      src={api.logo || "/placeholder.svg"}
-                      alt={`${api.provider} logo`}
-                      width={24}
-                      height={24}
-                      className="object-contain"
-                    />
+        {loading ? (
+          <div className="flex items-center justify-center h-24">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <span className="ml-2 text-muted-foreground">Loading API status...</span>
+          </div>
+        ) : error ? (
+          <div className="text-red-500 text-center">{error}</div>
+        ) : apiStatuses && apiStatuses.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {apiStatuses.map((api) => (
+              <div
+                key={api.provider}
+                className="flex flex-col space-y-2 rounded-lg border border-border/40 bg-background/50 p-4"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="relative h-6 w-6 overflow-hidden rounded-full bg-background">
+                      <Image
+                        src={api.logo || "/placeholder.svg"}
+                        alt={`${api.provider} logo`}
+                        width={24}
+                        height={24}
+                        className="object-contain"
+                      />
+                    </div>
+                    <span className="font-medium">{api.provider}</span>
                   </div>
-                  <span className="font-medium">{api.provider}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>{renderStatusIcon(api.status)}</TooltipTrigger>
+                      <TooltipContent>
+                        <p>Current status: {api.status}</p>
+                        {api.lastIncident && (
+                          <>
+                            <div className="mt-1 font-semibold">{api.lastIncident.title}</div>
+                            <div className="text-xs text-muted-foreground">{api.lastIncident.date}</div>
+                            <div className="text-xs">{api.lastIncident.status}</div>
+                          </>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>{renderStatusIcon(api.status)}</TooltipTrigger>
-                    <TooltipContent>
-                      <p>Current status: {api.status}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <div className="flex items-center justify-between">
+                  {renderStatusBadge(api.status)}
+                  <span className="text-xs text-muted-foreground">Latency: {api.latency}</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                {renderStatusBadge(api.status)}
-                <span className="text-xs text-muted-foreground">Latency: {api.latency}</span>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-muted-foreground text-center">No API status data available.</div>
+        )}
       </CardContent>
     </Card>
   )
