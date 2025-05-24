@@ -1,113 +1,30 @@
 # Teiden Dashboard
 
-Teiden is a secure API key management and analytics dashboard. It enables users to organize, store, and monitor API keys (including OpenAI keys) with robust encryption, usage tracking, and agent-based automation.
+**Teiden** is your all-in-one platform for secure API key management and usage analytics. Effortlessly organize, store, and monitor your API keys—including OpenAI keys—with enterprise-grade encryption, usage tracking, and automated insights.
 
-## Features
+🚀 **Try it now at [teiden.vercel.app](https://teiden.vercel.app)**
 
-- **User Authentication**: Email/password authentication using Supabase Auth
-- **Secure API Key Storage**: AES-256 encryption for all stored API keys
-- **Row-Level Security**: Ensures users can only access their own data
-- **Private API Access**: Backend-only endpoints for secure API key retrieval
-- **Dashboard to visualize API usage**
-- **Add and manage API keys**
-- **Organize API keys by project**
-- **Usage tracking for OpenAI API keys**
-- **Automated agents for data fetching and processing**
+## Why Teiden?
 
-## OpenAI Usage Fetcher Agent
+- **Centralized API Key Management**: Manage all your API keys in one secure place.
+- **Powerful Analytics**: Visualize API usage and track consumption trends over time.
+- **Automated Usage Fetching**: Get up-to-date usage metrics for OpenAI and other providers, powered by intelligent agents.
+- **Project Organization**: Group keys by project for better clarity and control.
+- **Enterprise-Grade Security**: All keys are encrypted with AES-256, and access is protected by robust authentication and row-level security.
+- **Seamless Collaboration**: Built for teams and individuals who need to manage sensitive credentials safely.
 
-Teiden includes an automated agent that fetches usage data from the OpenAI API for all stored API keys. This feature:
+## Key Features
 
-- Fetches usage data from OpenAI's dashboard endpoints
-- Processes and stores the data in the database
-- Runs every 15 minutes via a scheduled cron job
-- Uses LangGraph (Python) for the agent workflow implementation
+- **User Authentication**: Secure email/password login (Supabase Auth)
+- **Encrypted API Key Storage**: Your secrets are always protected
+- **Usage Tracking**: Automated agents fetch and analyze API usage
+- **Dashboard**: Intuitive UI to visualize and manage your API keys
+- **Project Organization**: Keep your keys organized by project
+- **Open Source & Self-Hostable**: Run Teiden on your own infrastructure if you prefer
 
-### How the Agent Works
+## Get Started
 
-1. Retrieves all OpenAI API keys from the database
-2. For each key:
-   - Decrypts the API key
-   - Tests the connection to ensure the key is valid
-   - Fetches usage data for the last day from OpenAI's dashboard API
-   - Processes the data and categorizes it by model
-   - Stores the metrics in the usage_metrics table
-
-### Python Implementation
-
-The OpenAI usage fetcher is implemented in Python using LangGraph, providing robust agent orchestration. The Python implementation:
-
-- Runs as a separate process from the Next.js application
-- Connects directly to Supabase for database operations
-- Utilizes LangGraph's StateGraph for workflow orchestration
-- Handles error recovery and state management
-
-### Development
-
-To run the cron jobs locally during development:
-
-```bash
-npm run dev:cron
-```
-
-This simulates the production cron jobs locally, including the Python-based OpenAI usage fetcher.
-
-You can also run the Python agent directly:
-
-```bash
-bash scripts/run-usage-fetcher.sh
-```
-
-### Requirements
-
-The Python agent requires:
-- Python 3.9+
-- LangGraph 0.4.1+
-- Python libraries listed in `scripts/requirements.txt`
-
-The first time you run the agent, it will set up a Python virtual environment and install dependencies automatically.
-
-## Technical Architecture
-
-### Authentication Flow
-
-1. Users sign up or log in using email/password through Supabase Auth
-2. Upon successful authentication, the user receives a session token
-3. Protected routes and API endpoints verify the session token before granting access
-
-### API Key Security
-
-- **Encryption**: All API keys are encrypted using AES-256-CBC before storage
-- **Masking**: When displaying API keys in the UI, only masked versions are shown
-- **Secure Retrieval**: Full decrypted keys are only accessible to authorized backend services
-
-### Database Schema
-
-The database uses the following schema:
-
-```sql
-CREATE TABLE api_keys (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  provider VARCHAR(255) NOT NULL,
-  encrypted_key TEXT NOT NULL,
-  name VARCHAR(255),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-  UNIQUE(user_id, provider)
-);
-```
-
-### API Endpoints
-
-- `GET /api/keys` - List all API keys for the authenticated user
-- `POST /api/keys` - Add a new API key (encrypts before storing)
-- `DELETE /api/keys?id=<key_id>` - Delete an API key
-- `GET /api/keys/[id]` - Get details of a specific API key (with masked value)
-- `PATCH /api/keys/[id]` - Update a specific API key
-- `POST /api/keys/fetch` - Backend-only endpoint to securely retrieve decrypted API keys
-
-## Setup Instructions
+You can start using Teiden instantly at [teiden.vercel.app](https://teiden.vercel.app), or self-host your own instance by following the instructions below.
 
 ### Prerequisites
 
@@ -153,9 +70,28 @@ npm run build
 npm start
 ```
 
+## Development & Agents
+
+Teiden includes a Python-based agent that automatically fetches and processes OpenAI usage data. To run the agent locally:
+
+```bash
+npm run dev:cron
+```
+
+Or run the Python agent directly:
+
+```bash
+bash scripts/run-usage-fetcher.sh
+```
+
+The agent requires Python 3.9+, LangGraph 0.4.1+, and dependencies listed in `scripts/requirements.txt`. The first run will set up a virtual environment automatically.
+
 ## Security Considerations
 
-- The encryption key should be at least 32 characters long and stored securely
-- Server-to-server authentication uses a separate secret key
+- Encryption keys should be at least 32 characters and stored securely
 - API keys are never exposed in client-side code or logs
-- Row-level security ensures data isolation between users 
+- Row-level security ensures data isolation between users
+
+---
+
+**Teiden** is open source and welcomes contributions. For issues, feature requests, or to get involved, open an issue or pull request on GitHub. 
