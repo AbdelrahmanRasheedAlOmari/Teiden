@@ -1,6 +1,6 @@
-# Kyto Dashboard Backend
+# Teiden Dashboard
 
-This repository contains the code for the Kyto Dashboard backend, focusing on user authentication and secure API key storage.
+Teiden is a secure API key management and analytics dashboard. It enables users to organize, store, and monitor API keys (including OpenAI keys) with robust encryption, usage tracking, and agent-based automation.
 
 ## Features
 
@@ -9,13 +9,14 @@ This repository contains the code for the Kyto Dashboard backend, focusing on us
 - **Row-Level Security**: Ensures users can only access their own data
 - **Private API Access**: Backend-only endpoints for secure API key retrieval
 - **Dashboard to visualize API usage**
-- **Ability to add and manage API keys**
-- **Projects to organize API keys**
+- **Add and manage API keys**
+- **Organize API keys by project**
 - **Usage tracking for OpenAI API keys**
+- **Automated agents for data fetching and processing**
 
 ## OpenAI Usage Fetcher Agent
 
-The application includes an automated agent that fetches usage data from the OpenAI API for all stored API keys. This feature:
+Teiden includes an automated agent that fetches usage data from the OpenAI API for all stored API keys. This feature:
 
 - Fetches usage data from OpenAI's dashboard endpoints
 - Processes and stores the data in the database
@@ -34,10 +35,10 @@ The application includes an automated agent that fetches usage data from the Ope
 
 ### Python Implementation
 
-The OpenAI usage fetcher is implemented in Python using LangGraph, which provides robust agent orchestration capabilities. The Python implementation:
+The OpenAI usage fetcher is implemented in Python using LangGraph, providing robust agent orchestration. The Python implementation:
 
 - Runs as a separate process from the Next.js application
-- Directly connects to Supabase for database operations
+- Connects directly to Supabase for database operations
 - Utilizes LangGraph's StateGraph for workflow orchestration
 - Handles error recovery and state management
 
@@ -49,7 +50,7 @@ To run the cron jobs locally during development:
 npm run dev:cron
 ```
 
-This will simulate the production cron jobs on your local environment, including running the Python-based OpenAI usage fetcher.
+This simulates the production cron jobs locally, including the Python-based OpenAI usage fetcher.
 
 You can also run the Python agent directly:
 
@@ -59,12 +60,12 @@ bash scripts/run-usage-fetcher.sh
 
 ### Requirements
 
-The Python agent requires the following:
+The Python agent requires:
 - Python 3.9+
 - LangGraph 0.4.1+
 - Python libraries listed in `scripts/requirements.txt`
 
-The first time you run the agent, it will set up a Python virtual environment and install the necessary dependencies automatically.
+The first time you run the agent, it will set up a Python virtual environment and install dependencies automatically.
 
 ## Technical Architecture
 
